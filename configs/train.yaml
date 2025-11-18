@@ -1,0 +1,67 @@
+trainer:
+  grad_accumulation_steps: 1
+  logging_dir: "logs"
+  find_unused_parameters: False
+  checkpoint_dir: "ckpts"
+  checkpoint_path: ""
+  last_per_steps: 500
+  save_per_steps: 2000
+  valid_per_steps: 2000
+  max_checkpoints: 5
+  use_ema: False
+  epochs: 100
+  max_grad_norm: 1.
+
+  optimizer:
+    lr: 7.5e-5
+
+  scheduler:
+    - name: "linear"
+      start_factor: 1e-8
+      end_factor: 1.
+      total_iters: 2000
+    - name: "linear"
+      start_factor: 1.
+      end_factor: 1e-8
+      total_iters: 500000
+  
+  nest:
+    name: "ams-supcon"
+    n_class: 2
+    dim: 192
+    τ: 0.07
+    s: 30
+    m: 0.35
+    λ: 0.9
+    k: 32
+    α: 0
+
+
+model:
+  dim: 192
+  text_dim: 768
+  hf_model_name: "almanach/camemberta-base"
+  n_categories: []
+  n_numericals: 3
+  tab_dim: 128
+  depth: 4
+  n_heads: 16
+  drop_rate: 0.1
+  n_spec_toks: 1
+
+data:
+  tokenizer:
+    name: "almanach/camemberta-base"
+  
+  tab:
+    mean: [64.96507081, 14975.7841181, 26042.82867972]
+    std: [656.58337759, 31084.99387323, 57956.99803348]
+
+  dataset:
+    url:
+      train: "data/cross-validation/train_clean_v1_k0.jsonl"
+      valid: "data/cross-validation/valid_clean_v1_k0.jsonl"
+    batch_size: 16
+    num_workers: 2
+
+

@@ -1,0 +1,6 @@
+text
+user.listed_count
+user.favourites_count
+user.description
+user.statuses_count
+label

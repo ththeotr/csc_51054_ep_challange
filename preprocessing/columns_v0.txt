@@ -1,0 +1,11 @@
+extended_tweet.full_text
+extended_tweet.entities.hashtags
+extended_tweet.entities.user_mentions
+text
+entities.hashtags
+entities.user_mentions
+user.listed_count
+user.favourites_count
+user.description
+user.statuses_count
+label
