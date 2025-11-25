@@ -13,9 +13,9 @@ def filter_data_v0(filepath, outpath, test=False):
         columns = [l.strip() for l in f.readlines()]
     
     if test:
-        df = df[columns[:-1]]
-    else:
-        df = df[columns]
+        columns = columns[:-1] + ["challenge_id"]
+
+    df = df[columns]
 
     def _select(tweet, cname):
         val = tweet[cname]
@@ -50,29 +50,28 @@ def filter_data_v1(filepath, outpath, test=False):
         columns = [l.strip() for l in f.readlines()]
     
     if test:
-        df = df[columns[:-1]]
-    else:
-        df = df[columns]
+        columns = columns[:-1] + ["challenge_id"]
+    df = df[columns]
 
     df.to_json(outpath, orient='records', lines=True, date_format='iso', force_ascii=False)
 
 
 if __name__ == "__main__":
-    filter_data_v0(
-        "Kaggle2025/train.jsonl",
-        "data/train_clean_v0.jsonl",
-        False
-    )
+    # filter_data_v0(
+    #     "Kaggle2025/train.jsonl",
+    #     "data/train_clean_v0.jsonl",
+    #     False
+    # )
     filter_data_v0(
         "Kaggle2025/kaggle_test.jsonl",
         "data/test_clean_v0.jsonl",
         True
     )
-    filter_data_v1(
-        "data/train_clean_v0.jsonl",
-        "data/train_clean_v1.jsonl",
-        False
-    )
+    # filter_data_v1(
+    #     "data/train_clean_v0.jsonl",
+    #     "data/train_clean_v1.jsonl",
+    #     False
+    # )
     filter_data_v1(
         "data/test_clean_v0.jsonl",
         "data/test_clean_v1.jsonl",

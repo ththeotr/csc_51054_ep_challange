@@ -21,6 +21,7 @@ class TwitterDataset(Dataset):
     
     def norm_tab(self, value, idx):
         return (value - self.tab.mean[idx]) / self.tab.std[idx]
+        # return value
 
     def __getitem__(self, index):
         sample = self.dataset.iloc[index]
@@ -29,15 +30,19 @@ class TwitterDataset(Dataset):
         text = sample["text"]
         label = sample["label"]
 
+        text = text + " description de l'utilisateur: " + desc
+
         tab = torch.tensor([
             self.norm_tab(sample["user.listed_count"], 0),
             self.norm_tab(sample["user.favourites_count"], 1),
             self.norm_tab(sample["user.statuses_count"], 2),
+            # sample["user.listed_count"],
+            # sample["user.favourites_count"],
+            # sample["user.statuses_count"],
         ], dtype=torch.float32)
 
         return {
             "text": text,
-            "desc": desc,
             "tab": tab,
             "label": label
         }
@@ -59,15 +64,15 @@ class TwitterDataModule(ChicDataModule):
 
     def collate_fn(self, batch):
         text_enc = self.tokenizer([b["text"] for b in batch], padding=True, return_tensors="pt")
-        desc_enc = self.tokenizer([b["desc"] for b in batch], padding=True, return_tensors="pt")
+        # desc_enc = self.tokenizer([b["desc"] for b in batch], padding=True, return_tensors="pt")
         tabs = torch.stack([b["tab"] for b in batch])
         labels = torch.LongTensor([b["label"] for b in batch])
 
         return {
             "text": text_enc.input_ids,
-            "desc": desc_enc.input_ids,
+            # "desc": desc_enc.input_ids,
             "text_mask": text_enc.attention_mask,
-            "desc_mask": desc_enc.attention_mask,
+            # "desc_mask": desc_enc.attention_mask,
             "tab": tabs,
             "labels": labels
         }
@@ -88,7 +93,7 @@ class TwitterDataModule(ChicDataModule):
             self.train_dataset,
             batch_size = self.data_cfg.batch_size,
             pin_memory=True,
-            shuffle=True,
+            shuffle=False,
             collate_fn=self.collate_fn,
             num_workers=self.data_cfg.num_workers
         )
@@ -97,7 +102,7 @@ class TwitterDataModule(ChicDataModule):
     def valid_dataloader(self):
         dataloader = DataLoader(
             self.valid_dataset,
-            batch_size = self.data_cfg.batch_size * 2,
+            batch_size = self.data_cfg.batch_size,
             pin_memory=True,
             shuffle=False,
             collate_fn=self.collate_fn,

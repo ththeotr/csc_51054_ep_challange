@@ -3,19 +3,20 @@ from omegaconf import OmegaConf
 from chiclab.roll.trainer import ChicTrainer
 from chiclab.roll.optim import build_optimizer, build_scheduler
 
-from src.model import TwitterModel
+from src.model import TwitterModel,TwitterNewModel, TwitterFancyModel
 from src.data import TwitterDataModule
 
 class TwitterTrainer(ChicTrainer):
     def configure_optimizers(self, model):
-        params = [p for p in model.parameters() if p.requires_grad] + \
-            [p for p in self.nest.parameters() if p.requires_grad]
+        # print(len([p for p in self.nest.parameters() if p.requires_grad]))
+        params = [p for p in model.parameters() if p.requires_grad]
+            # [p for p in self.nest.parameters() if p.requires_grad]
         optimizer = build_optimizer(
             "adamw", params, **self.optimizer
         )
 
         scheduler = build_scheduler(
-            "sequential", optimizer, self.scheduler
+            "linear", optimizer, **self.scheduler
         )
 
         return optimizer, scheduler
@@ -29,16 +30,19 @@ class TwitterTrainer(ChicTrainer):
         return loss, loss_part
 
     def log_step(self):
+        self.writer.add_scalar("lr", self.log_values["lr"], self.log_values["global_step"])
         self.writer.add_scalar("train/loss", self.log_values["train/loss"], self.log_values["global_step"])
-        self.writer.add_scalar("train/loss_ams", self.log_values["train/metrics"]["ams"], self.log_values["global_step"])
-        self.writer.add_scalar("train/loss_supcon", self.log_values["train/metrics"]["supcon"], self.log_values["global_step"])
-        if self.log_values["global_step"] % self.valid_per_steps == 0:
+        # self.writer.add_scalar("train/acc", self.log_values["train/metrics"]["acc"], self.log_values["global_step"])
+        # self.writer.add_scalar("train/loss_ams", self.log_values["train/metrics"]["ams"], self.log_values["global_step"])
+        # self.writer.add_scalar("train/loss_supcon", self.log_values["train/metrics"]["supcon"], self.log_values["global_step"])
+        if self.log_values["global_step"] % self.valid_per_steps == 0 and self.log_values["valid/metrics"]:
             self.writer.add_scalar("valid/loss", self.log_values["valid/loss"], self.log_values["global_step"])
-            self.writer.add_scalar("valid/loss_ams", self.log_values["valid/metrics"]["ams"], self.log_values["global_step"])
-            self.writer.add_scalar("valid/loss_supcon", self.log_values["valid/metrics"]["supcon"], self.log_values["global_step"])
+            # self.writer.add_scalar("valid/acc", self.log_values["valid/metrics"]["acc"], self.log_values["global_step"])
+            # self.writer.add_scalar("valid/loss_ams", self.log_values["valid/metrics"]["ams"], self.log_values["global_step"])
+            # self.writer.add_scalar("valid/loss_supcon", self.log_values["valid/metrics"]["supcon"], self.log_values["global_step"])
 
 def main(config):
-    model = TwitterModel(**config.model)
+    model = TwitterNewModel(**config.model)
 
     print(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6)
 
@@ -46,7 +50,7 @@ def main(config):
     datamodule.prepare()
 
     trainer = TwitterTrainer(**config.trainer)
-    trainer.fit(model, datamodule)
+    trainer.fit(model, datamodule, seed=42)
 
 if __name__ == "__main__":
     import sys

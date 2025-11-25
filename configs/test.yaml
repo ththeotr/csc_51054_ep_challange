@@ -1,0 +1,10 @@
+config: "configs/train.yaml"
+ckpt: "ckpts/ams_supcon_2/checkpoint_00001500.pth"
+
+data:
+  url: "data/test_clean_v1.jsonl"
+  batch_size: 32
+  num_workers: 2
+
+output_path: "Kaggle2025/submission_pretrained_1.csv"
+device: "mps"

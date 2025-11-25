@@ -1,57 +1,60 @@
 trainer:
-  grad_accumulation_steps: 1
-  logging_dir: "logs"
+  grad_accumulation_steps: 2
+  logging_dir: "logs/ams1"
   find_unused_parameters: False
-  checkpoint_dir: "ckpts"
+  checkpoint_dir: "ckpts/ams1"
   checkpoint_path: ""
-  last_per_steps: 500
-  save_per_steps: 2000
-  valid_per_steps: 2000
+  last_per_steps: 50
+  save_per_steps: 250
+  valid_per_steps: 125000
   max_checkpoints: 5
   use_ema: False
   epochs: 100
   max_grad_norm: 1.
 
   optimizer:
-    lr: 7.5e-5
+    lr: 1e-5
 
   scheduler:
-    - name: "linear"
-      start_factor: 1e-8
-      end_factor: 1.
-      total_iters: 2000
-    - name: "linear"
-      start_factor: 1.
-      end_factor: 1e-8
-      total_iters: 500000
+    # - name: "linear"
+    #   start_factor: 1e-8
+    #   end_factor: 1.
+    #   total_iters: 100
+    start_factor: 1.
+    end_factor: 1e-8
+    total_iters: 62500
   
   nest:
-    name: "ams-supcon"
-    n_class: 2
-    dim: 192
-    τ: 0.07
+    name: "ams"
+    # name: "ams-supcon"
+    # # n_class: 2
+    # # dim: 1536
+    # τ: 0.07
     s: 30
     m: 0.35
-    λ: 0.9
-    k: 32
-    α: 0
+    # λ: 0.9
+    # k: 32
+    # α: 0
 
 
 model:
-  dim: 192
+  n_classes: 2
+  dim: 768
+  hf_model_name: "almanach/camembertav2-base"
   text_dim: 768
-  hf_model_name: "almanach/camemberta-base"
   n_categories: []
   n_numericals: 3
-  tab_dim: 128
-  depth: 4
+  tab_dim: 768
+  tab_depth: 6
+  depth: 8
   n_heads: 16
   drop_rate: 0.1
   n_spec_toks: 1
+  
 
 data:
   tokenizer:
-    name: "almanach/camemberta-base"
+    name: "almanach/camembertav2-base"
   
   tab:
     mean: [64.96507081, 14975.7841181, 26042.82867972]
@@ -59,8 +62,9 @@ data:
 
   dataset:
     url:
-      train: "data/cross-validation/train_clean_v1_k0.jsonl"
-      valid: "data/cross-validation/valid_clean_v1_k0.jsonl"
+      train: "data/train_clean_v1.jsonl"
+      # valid: "data/cross-validation/valid_clean_v1_k0.jsonl"
+      valid: "data/train_micro.jsonl"
     batch_size: 16
     num_workers: 2
 
